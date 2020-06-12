@@ -1,4 +1,5 @@
 ﻿using CityFilter_WebApi.Models;
+using CityFilter_WebApi.Operations;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -19,41 +20,54 @@ namespace CityFilter_WebApi.Controllers
         public IHttpActionResult getCity([FromBody] ReceivedData value)
         {
             string data = "";
-            string sorting;
-            string name;
-            string district;
-            string code;
-            if (value.data[0] != null)
+            string sorting = "";
+            string name = "";
+            string district = "";
+            string code = "";
+            List<string> st2;
+            var vv="";
+            AddressInfo Gdata = new AddressInfo();
+            AddressInfo Pdata = new AddressInfo();
+            List<City> nameFilter = new List<City>();
+            List<City> districtFilter = new List<City>();
+            List<City> NameFilter = new List<City>();
+
+
+            if (value.data?.Any() ?? false)
             {
-                data = value.data[0];
-                if (value.sorting != null)
+                Gdata = Operation.getObject(value.data[0]);
+                if (value.nameFilter?.Any() ?? false)
                 {
-                    sorting = value.sorting;
+                    st2 = Operation.StringtoList(value.nameFilter[0]);
+                    nameFilter = Operation.FilterName(Gdata,st2);
+
                 }
-                if (value.nameFilter[0] != null)
+                if (value.districtFilter?.Any() ?? false)
                 {
-                    name = value.nameFilter[0];
+                    st2 = Operation.StringtoList(value.districtFilter[0]);
+                    nameFilter = Operation.DistrictName(Gdata, st2);
+
                 }
-                if (value.districtFilter[0] != null)
-                {
-                    district = value.districtFilter[0];
-                }
-                if (value.codefilter[0] != null)
+                if (value.codefilter?.Any() ?? false)
                 {
                     code = value.codefilter[0];
+                }
+                if (value.sorting?.Any() ?? false)
+                {
+                    sorting = value.sorting;
                 }
             }
             else
             {
 
             }
-            XmlDocument doc = new XmlDocument();
-            doc.LoadXml(value.data[0]);
-            string jsonText = JsonConvert.SerializeXmlNode(doc);
+            //XmlDocument doc = new XmlDocument();
+            //doc.LoadXml(value.data[0]);
+            //string jsonText = JsonConvert.SerializeXmlNode(doc);
 
             //var listOb = JsonConvert.DeserializeObject<List<AddressInfo>>(jsonText);
 
-            AddressInfo account = JsonConvert.DeserializeObject<AddressInfo>(jsonText);
+            //AddressInfo account = JsonConvert.DeserializeObject<AddressInfo>(jsonText);
             // XmlDocument doc2 = JsonConvert.DeserializeXmlNode(jsonText);
             //AddressInfo result = null;
             //XmlSerializer serializer = new XmlSerializer(typeof(AddressInfo));
@@ -61,8 +75,11 @@ namespace CityFilter_WebApi.Controllers
             //{
             //    result = (AddressInfo)serializer.Deserialize(reader);
             //}
+            AddressInfo st = Operation.XmlToObject(data);
+            string  str= Operation.ObjectToXml(st);
 
-            return Ok(jsonText);
+
+            return Ok(str);
         }
     }
 }
