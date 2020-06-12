@@ -30,28 +30,30 @@ namespace CityFilter_WebApi.Controllers
             AddressInfo Pdata = new AddressInfo();
             List<City> nameFilter = new List<City>();
             List<City> districtFilter = new List<City>();
-            List<City> NameFilter = new List<City>();
+            List<City> codeFilter = new List<City>();
 
 
             if (value.data?.Any() ?? false)
             {
-                Gdata = Operation.getObject(value.data[0]);
+                Gdata = Operation.getObject(value.data);
                 if (value.nameFilter?.Any() ?? false)
                 {
-                    st2 = Operation.StringtoList(value.nameFilter[0]);
+                    st2 = Operation.StringtoList(value.nameFilter);
                     nameFilter = Operation.FilterName(Gdata,st2);
 
                 }
                 if (value.districtFilter?.Any() ?? false)
                 {
-                    st2 = Operation.StringtoList(value.districtFilter[0]);
-                    nameFilter = Operation.DistrictName(Gdata, st2);
+                    st2 = Operation.StringtoList(value.districtFilter);
+                    districtFilter = Operation.FilterDistrict(Gdata, st2);
 
                 }
-                if (value.codefilter?.Any() ?? false)
+                if (value.codefilter?.Any() ?? false) 
                 {
-                    code = value.codefilter[0];
+                    st2 = Operation.StringtoList(value.codefilter);
+                    codeFilter = Operation.FilterCode(Gdata, st2);
                 }
+
                 if (value.sorting?.Any() ?? false)
                 {
                     sorting = value.sorting;

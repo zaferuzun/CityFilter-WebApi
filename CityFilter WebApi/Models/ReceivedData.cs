@@ -7,11 +7,11 @@ namespace CityFilter_WebApi.Models
 {
     public class ReceivedData
     {
-        public List<string> nameFilter { get; set; }
-        public List<string> districtFilter { get; set; }
-        public List<string> codefilter { get; set; }
+        public string nameFilter { get; set; }
+        public string districtFilter { get; set; }
+        public string codefilter { get; set; }
 
         public string sorting { get; set; }
-        public List<string> data { get; set; }
+        public string data { get; set; }
     }
 }

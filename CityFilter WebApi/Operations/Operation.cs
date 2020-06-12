@@ -65,25 +65,53 @@ namespace CityFilter_WebApi.Operations
             }
             return filterList;
         }
-        public static List<City> DistrictName(AddressInfo Gobject, List<string> filter)
+        public static List<City> FilterDistrict(AddressInfo Gobject, List<string> filter)
         {
 
-            City filterCity = new City();
+            //City filterCity = new City();
             List<City> cityList = Gobject.City;
             List<City> filtertList = new List<City>();
-            List<District> dc = new List<District>();
-            foreach (var item in filter)
+            //List<District> dc = new List<District>();
+            List<District> dc2 = new List<District>();
+
+            //foreach (var item in filter)
+            //{
+            //    dc.Clear();
+            //    City filterCity = new City();
+            //    foreach (var item2 in cityList)
+            //    {
+            //        foreach (var item3 in item2.District)
+            //        {
+            //            if (item.Equals(item3.Name))
+            //            {
+            //                dc.Add(item3);
+            //                filterCity.Code = item2.Code;
+            //                filterCity.Name = item2.Name;
+            //            }
+            //            // filteredList = myList.Where(x => x > 7).ToList();
+            //        }
+
+            //    }
+            //    if (dc?.Any() ?? false)
+            //    {
+            //        filterCity.District = dc;
+            //        filtertList.Add(filterCity);
+            //    }
+
+            //}
+            foreach (var item in cityList)
             {
-                dc.Clear();
-                foreach (var item2 in cityList)
+                List<District> dc = new List<District>();
+                City filterCity = new City();
+                foreach (var item2 in item.District)
                 {
-                    foreach (var item3 in item2.District)
+                    foreach (var item3 in filter)
                     {
-                        if (item.Equals(item3.Name))
+                        if (item3.Equals(item2.Name))
                         {
-                            dc.Add(item3);
-                            filterCity.Code = item2.Code;
-                            filterCity.Name = item2.Name;
+                            dc.Add(item2);
+                            filterCity.Code = item.Code;
+                            filterCity.Name = item.Name;
                         }
                         // filteredList = myList.Where(x => x > 7).ToList();
                     }
@@ -96,9 +124,27 @@ namespace CityFilter_WebApi.Operations
                 }
 
             }
-
             //filtertList = cityList.Where(x => x.District[0].Name.Equals("Alaçatı")).ToList();
             return filtertList;
+        }
+        public static List<City> FilterCode(AddressInfo Gobject, List<string> filter)
+        {
+
+            City filterCity = new City();
+            List<City> filterList = new List<City>();
+
+            foreach (var item in filter)
+            {
+                foreach (var item2 in Gobject.City)
+                {
+                    if (item == item2.Code)
+                    {
+                        filterCity = item2;
+                        filterList.Add(filterCity);
+                    }
+                }
+            }
+            return filterList;
         }
 
 
