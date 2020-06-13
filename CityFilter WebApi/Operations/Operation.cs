@@ -1,10 +1,15 @@
 ﻿using CityFilter_WebApi.Models;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 
 namespace CityFilter_WebApi.Operations
@@ -146,7 +151,228 @@ namespace CityFilter_WebApi.Operations
             }
             return filterList;
         }
+        public static AddressInfo XmlOrCsv(string xmlorcvs,string data)
+        {
+            AddressInfo result = null;
 
+            if (xmlorcvs=="XML")
+            {
+
+                return Operation.getObject(data);
+            }
+            else if(xmlorcvs == "CSV")
+            {
+                DataSet ds = new DataSet();
+                DataTable dt = ConvertCSVtoDataTable(data);
+                ds.Tables.Add(dt); // Table 1
+                DataTabletoObject(dt);
+                string xml = ds.GetXml();
+                string js = JsonConvert.SerializeObject(dt);
+                XNode node = JsonConvert.DeserializeXNode(js, "AddressInfo");
+                result = XmlToObject(node.ToString());
+                //AddressInfo pb = JsonConvert.DeserializeObject<AddressInfo>(js);
+                return result;
+            }
+            return result;
+        }
+        public static DataTable ConvertCSVtoDataTable(string csvStr)
+        {
+            DataTable dt = new DataTable();
+
+            string[] tableData = csvStr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            var col = from cl in tableData[0].Split(",".ToCharArray())
+                      select new DataColumn(cl);
+            dt.Columns.AddRange(col.ToArray());
+
+            (from st in tableData.Skip(1)
+             select dt.Rows.Add(st.Split(",".ToCharArray()))).ToList();
+
+            return dt;
+        }
+        public static string DataTabletoCSV (DataTable dtDataTable)
+        {
+
+            StringBuilder sb = new StringBuilder();
+            string[] columnNames = dtDataTable.Columns.Cast<DataColumn>().
+                                              Select(column => column.ColumnName).
+                                              ToArray();
+            sb.AppendLine(string.Join(",", columnNames));
+
+            foreach (DataRow row in dtDataTable.Rows)
+            {
+                string[] fields = row.ItemArray.Select(field => field.ToString()).
+                                                ToArray();
+                sb.AppendLine(string.Join(",", fields));
+            }
+
+            return sb.ToString();
+        }
+        public static City getCity()
+        {
+            List<Zip> zipList = new List<Zip>()
+            {
+                new Zip{Code="1"}
+            };
+            District district2 = new District()
+            {
+                Zip = zipList.ToList(),
+                Name = ""
+            };
+            List<District> districtList = new List<District>();
+            districtList.Add(district2);
+            City city = new City()
+            {
+                District = districtList,
+                Name = "",
+                Code = ""
+            };
+            return city;
+        }
+        public static AddressInfo DataTabletoObject(DataTable dt)
+        {
+            AddressInfo result = null;
+            //City city = new City();
+            District district = new District();
+            //District district2 = new District();
+            
+            List<City> cityList = new List<City>();
+            List<Zip> zipList = new List<Zip>();
+            Zip zip = new Zip();
+            zipList.Add(zip);
+            // List<District> districtList = new List<District>();
+            // List<string[]> st = new List<string[]>();
+            // zip.Code = "123";
+            // district.Zip.Add(zip);
+            // district.Name = "123";
+            // districtList.Add(district);
+            // city.District = districtList;
+
+            //city = getCity();
+
+            //cityList[0].District[0] = district;
+            cityList.Add(getCity());
+            int i=0;
+            int j=0;
+            int k = 0;
+            int kont = 0;
+            int kont2 = 0;
+            int kont3=0;
+
+            int rowCount =dt.Rows.Count;
+            foreach (DataRow row in dt.Rows)
+            {
+                string[] fields = row.ItemArray.Select(field => field.ToString()).
+                                                ToArray();
+
+                if (cityList[i].Name != fields[0])
+                {
+
+                    if(kont!=0)
+                    {
+                        i += 1;
+                        cityList.Add(getCity());
+                    }
+                    cityList[i].Name = fields[0];
+                    cityList[i].Code = fields[1];
+                    k = 0;
+                    j = 0;
+                    kont2 = 0;
+                }
+
+                if (cityList[i].District[j].Name != fields[2])
+                {
+                    if (kont2 != 0)
+                    {
+                        j +=1;
+                        cityList[i].District.Add(new District());
+                    }
+                    cityList[i].District[j].Name = fields[2];
+
+                    cityList[i].District[j].Zip = new List<Zip>();
+                    cityList[i].District[j].Zip.Add(new Zip());
+                    k = 0;
+                    kont3 = 0;
+                }
+                if (kont3 != 0 )
+                    cityList[i].District[j].Zip.Add(new Zip());
+                cityList[i].District[j].Zip[k].Code= fields[3];
+
+                k += 1;
+                kont = +1;
+                kont2 += 1;
+                kont3 += 1;
+                rowCount -= 1;
+                //zipList.Add(zip);
+
+                //districtList.Add(district);
+            }
+            //        //foreach (DataRow row in dt.Rows)
+            //        //{
+            //        //    string[] fields = row.ItemArray.Select(field => field.ToString()).
+            //        //                                    ToArray();
+            //        //    zip = new Zip();
+            //        //    st.Add(fields);
+            //        //    if (city.Name != fields[0])
+            //        //    {
+
+            //        //        cityList.Add(city);
+            //        //        city = new City();
+            //        //        city.Name = fields[0];
+            //        //        city.Code = fields[1];
+            //        //        districtList = new List<District>();
+            //        //    }
+
+            //        //    if (district.Name != fields[2])
+            //        //    {
+            //        //        districtList.Add(district);
+            //        //        district = new District();
+            //        //        district.Name = fields[2];
+            //        //        zipList = new List<Zip>();
+            //        //    }
+
+
+            //        //    zip.Code = fields[3];
+            //        //    zipList.Add(zip);
+            //        //    district.Zip = zipList;
+
+            //        //    //zipList.Add(zip);
+
+            //        //    //districtList.Add(district);
+
+
+            //        //}
+
+            //        //foreach (DataRow row in dt.Rows)
+            //        //{
+            //        //    foreach (var item in row.ItemArray)
+            //        //    {
+
+            //        //        if (city.Name != item)
+            //        //        {
+
+            //        //            cityList.Add(city);
+            //        //            city = new City();
+            //        //            city.Name = fields[0];
+            //        //            city.Code = fields[1];
+            //        //            districtList = new List<District>();
+            //        //        }
+
+            //        //        if (district.Name != fields[2])
+            //        //        {
+            //        //            districtList.Add(district);
+            //        //            district = new District();
+            //        //            district.Name = fields[2];
+            //        //            zipList = new List<Zip>();
+            //        //        }
+
+
+            //        //        zip.Code = fields[3];
+            //        //        zipList.Add(zip);
+            //        //        district.Zip = zipList;
+            //        //    }
+            //        //}
+            return result;
+        }
 
     }
 

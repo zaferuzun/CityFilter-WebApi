@@ -1,0 +1,11 @@
+﻿CityName,CityCode,DistrictName,ZipCode
+Adana,01,Yüreğir,01310
+Adana,01,Yüreğir,01350
+Adana,01,Yüreğir,01358
+Adana,01,Yüreğir,01370
+Adana,01,Yüreğir,01375
+Adana,01,Yüreğir,01415
+Adıyaman,02,Adıyaman,02000
+Adıyaman,02,Adıyaman,02030
+Adıyaman,02,Adıyaman,02040
+Adıyaman,02,Adıyaman,02100

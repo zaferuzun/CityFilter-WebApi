@@ -33,28 +33,28 @@ namespace CityFilter_WebApi.Controllers
             List<City> codeFilter = new List<City>();
 
 
-            if (value.data?.Any() ?? false)
+            if (value.data!=null)
             {
-                Gdata = Operation.getObject(value.data);
-                if (value.nameFilter?.Any() ?? false)
+                Gdata = Operation.XmlOrCsv("CSV",value.data);
+                if (value.nameFilter != null)
                 {
                     st2 = Operation.StringtoList(value.nameFilter);
                     nameFilter = Operation.FilterName(Gdata,st2);
 
                 }
-                if (value.districtFilter?.Any() ?? false)
+                if (value.districtFilter != null)
                 {
                     st2 = Operation.StringtoList(value.districtFilter);
                     districtFilter = Operation.FilterDistrict(Gdata, st2);
 
                 }
-                if (value.codefilter?.Any() ?? false) 
+                if (value.codefilter != null) 
                 {
                     st2 = Operation.StringtoList(value.codefilter);
                     codeFilter = Operation.FilterCode(Gdata, st2);
                 }
 
-                if (value.sorting?.Any() ?? false)
+                if (value.sorting != null)
                 {
                     sorting = value.sorting;
                 }
