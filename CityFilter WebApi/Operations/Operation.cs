@@ -157,21 +157,12 @@ namespace CityFilter_WebApi.Operations
 
             if (xmlorcvs=="XML")
             {
-
                 return Operation.getObject(data);
             }
             else if(xmlorcvs == "CSV")
             {
-                DataSet ds = new DataSet();
                 DataTable dt = ConvertCSVtoDataTable(data);
-                ds.Tables.Add(dt); // Table 1
-                DataTabletoObject(dt);
-                string xml = ds.GetXml();
-                string js = JsonConvert.SerializeObject(dt);
-                XNode node = JsonConvert.DeserializeXNode(js, "AddressInfo");
-                result = XmlToObject(node.ToString());
-                //AddressInfo pb = JsonConvert.DeserializeObject<AddressInfo>(js);
-                return result;
+                return DataTabletoObject(dt);
             }
             return result;
         }
@@ -231,26 +222,7 @@ namespace CityFilter_WebApi.Operations
         public static AddressInfo DataTabletoObject(DataTable dt)
         {
             AddressInfo result = null;
-            //City city = new City();
-            District district = new District();
-            //District district2 = new District();
-            
             List<City> cityList = new List<City>();
-            List<Zip> zipList = new List<Zip>();
-            Zip zip = new Zip();
-            zipList.Add(zip);
-            // List<District> districtList = new List<District>();
-            // List<string[]> st = new List<string[]>();
-            // zip.Code = "123";
-            // district.Zip.Add(zip);
-            // district.Name = "123";
-            // districtList.Add(district);
-            // city.District = districtList;
-
-            //city = getCity();
-
-            //cityList[0].District[0] = district;
-            cityList.Add(getCity());
             int i=0;
             int j=0;
             int k = 0;
@@ -263,10 +235,8 @@ namespace CityFilter_WebApi.Operations
             {
                 string[] fields = row.ItemArray.Select(field => field.ToString()).
                                                 ToArray();
-
                 if (cityList[i].Name != fields[0])
                 {
-
                     if(kont!=0)
                     {
                         i += 1;
@@ -295,6 +265,7 @@ namespace CityFilter_WebApi.Operations
                 }
                 if (kont3 != 0 )
                     cityList[i].District[j].Zip.Add(new Zip());
+
                 cityList[i].District[j].Zip[k].Code= fields[3];
 
                 k += 1;
@@ -302,75 +273,8 @@ namespace CityFilter_WebApi.Operations
                 kont2 += 1;
                 kont3 += 1;
                 rowCount -= 1;
-                //zipList.Add(zip);
-
-                //districtList.Add(district);
             }
-            //        //foreach (DataRow row in dt.Rows)
-            //        //{
-            //        //    string[] fields = row.ItemArray.Select(field => field.ToString()).
-            //        //                                    ToArray();
-            //        //    zip = new Zip();
-            //        //    st.Add(fields);
-            //        //    if (city.Name != fields[0])
-            //        //    {
-
-            //        //        cityList.Add(city);
-            //        //        city = new City();
-            //        //        city.Name = fields[0];
-            //        //        city.Code = fields[1];
-            //        //        districtList = new List<District>();
-            //        //    }
-
-            //        //    if (district.Name != fields[2])
-            //        //    {
-            //        //        districtList.Add(district);
-            //        //        district = new District();
-            //        //        district.Name = fields[2];
-            //        //        zipList = new List<Zip>();
-            //        //    }
-
-
-            //        //    zip.Code = fields[3];
-            //        //    zipList.Add(zip);
-            //        //    district.Zip = zipList;
-
-            //        //    //zipList.Add(zip);
-
-            //        //    //districtList.Add(district);
-
-
-            //        //}
-
-            //        //foreach (DataRow row in dt.Rows)
-            //        //{
-            //        //    foreach (var item in row.ItemArray)
-            //        //    {
-
-            //        //        if (city.Name != item)
-            //        //        {
-
-            //        //            cityList.Add(city);
-            //        //            city = new City();
-            //        //            city.Name = fields[0];
-            //        //            city.Code = fields[1];
-            //        //            districtList = new List<District>();
-            //        //        }
-
-            //        //        if (district.Name != fields[2])
-            //        //        {
-            //        //            districtList.Add(district);
-            //        //            district = new District();
-            //        //            district.Name = fields[2];
-            //        //            zipList = new List<Zip>();
-            //        //        }
-
-
-            //        //        zip.Code = fields[3];
-            //        //        zipList.Add(zip);
-            //        //        district.Zip = zipList;
-            //        //    }
-            //        //}
+            result.City=cityList;
             return result;
         }
 
