@@ -35,7 +35,7 @@ namespace CityFilter_WebApi.Controllers
 
             if (value.data!=null)
             {
-                Gdata = Operation.XmlOrCsv("CSV",value.data);
+                Gdata = Operation.XmlOrCsv(value.formatType,value.data);
                 Operation.objToDataTable(Gdata);
                 if (value.nameFilter != null)
                 {
@@ -57,8 +57,7 @@ namespace CityFilter_WebApi.Controllers
                 Gdata = Operation.Filter(nameFilter, districtFilter, codeFilter);
                 if (value.sorting != null)
                 {
-                    sorting = value.sorting;
-                    Pdata=Operation.Sorting(Gdata,value.sorting,value.sortingParam);
+                    Gdata = Operation.Sorting(Gdata,value.sorting,value.sortingParam);
                 }
             }
             else
@@ -79,11 +78,9 @@ namespace CityFilter_WebApi.Controllers
             //{
             //    result = (AddressInfo)serializer.Deserialize(reader);
             //}
-            AddressInfo st = Operation.XmlToObject(data);
-            string  str= Operation.ObjectToXml(st);
+            string P_data = Operation.XmlOrCsvPostData(Gdata,value.formatType);
 
-
-            return Ok(str);
+            return Ok(P_data);
         }
     }
 }

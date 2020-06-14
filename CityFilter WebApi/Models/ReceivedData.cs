@@ -13,5 +13,6 @@ namespace CityFilter_WebApi.Models
         public string sortingParam { get; set; }  
         public string sorting { get; set; }
         public string data { get; set; }
+        public string formatType { get; set; }
     }
 }

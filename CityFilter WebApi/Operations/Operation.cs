@@ -133,7 +133,8 @@ namespace CityFilter_WebApi.Operations
             else if(xmlorcvs == "CSV")
             {
                 DataTable dt = ConvertCSVtoDataTable(data);
-                return DataTabletoObject(dt);
+                result = DataTabletoObject(dt);
+                return result;
             }
             return result;
         }
@@ -332,58 +333,47 @@ namespace CityFilter_WebApi.Operations
         public static AddressInfo Sorting(AddressInfo G_obj,string sorting,string sortingParam)
         {
             AddressInfo result = new AddressInfo();
-
-            //G_obj.City = G_obj.City.OrderByDescending(item => item.Name).ToList();
-            //var azalanSiralama = G_obj.City.OrderBy(item => item).ToList();
-            ////result.City.Sort();
-            //result.City = artanSiralama;
             result = G_obj;
-            if (sorting == "ASCENDING")
+            if (sortingParam == "CITY")
             {
-                if (sortingParam == "CITY")
-                {
-                    result.City = G_obj.City.OrderByDescending(item => item.Name).ToList();
-                }
-                else if (sortingParam == "CODE")
-                {
-                    result.City = G_obj.City.OrderByDescending(item => item.Code).ToList();
-                }
-                else if (sortingParam == "DISTRICT")
-                {
-                    int i = 0;
-                    foreach (var item in G_obj.City.ToList())
-                    {
-                        result.City[i].District = item.District.OrderByDescending(x => x.Name).ToList();
-                        i++;
-                    }
-                }
-                else if (sortingParam == "ZIPCODE")
-                {
-                    int i = 0;
-                    int j = 0;
-                    foreach (var item in G_obj.City.ToList())
-                    {
-                        foreach (var item2 in item.District.ToList())
-                        {
-                            result.City[i].District[j].Zip = item2.Zip.OrderByDescending(x => x.Code).ToList();
-                            j++;
-                        }
-                        i++;
-                        j = 0;
-                    }
-                }
-                else
-                {
-                    //artanSiralama = G_obj.City.OrderByDescending(item => item.Name).ToList();
-                }
-
+                result = Operations.Sorting.CityName(result, sorting);
             }
-            else if (sorting == "DESCENDING")
+            else if (sortingParam == "CODE")
             {
-
+                result = Operations.Sorting.CityCode(result, sorting);
+            }
+            else if (sortingParam == "DISTRICT")
+            {
+                result = Operations.Sorting.DistrictName(result, sorting);
+            }
+            else if (sortingParam == "ZIPCODE")
+            {
+                result = Operations.Sorting.ZipCode(result, sorting);
+            }
+            else if (sortingParam == "ALL")
+            {
+                result = Operations.Sorting.CityName(result, sorting);
+                result = Operations.Sorting.CityCode(result, sorting);
+                result = Operations.Sorting.DistrictName(result, sorting);
+                result = Operations.Sorting.ZipCode(result, sorting);
             }
             return result;
         }
+        public static string XmlOrCsvPostData(AddressInfo result, string xmlorcvs)
+        {
+            string P_data = "";
+            if (xmlorcvs == "XML")
+            {
+                P_data = ObjectToXml(result);
+            }
+            else if (xmlorcvs == "CSV")
+            {
+                DataTable dt = objToDataTable(result);
+                P_data = DataTabletoCSV(dt);
+            }
+            return P_data;
+        }
+
     }
 
 
