@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -72,38 +73,9 @@ namespace CityFilter_WebApi.Operations
         }
         public static List<City> FilterDistrict(AddressInfo Gobject, List<string> filter)
         {
-
-            //City filterCity = new City();
             List<City> cityList = Gobject.City;
             List<City> filtertList = new List<City>();
-            //List<District> dc = new List<District>();
             List<District> dc2 = new List<District>();
-
-            //foreach (var item in filter)
-            //{
-            //    dc.Clear();
-            //    City filterCity = new City();
-            //    foreach (var item2 in cityList)
-            //    {
-            //        foreach (var item3 in item2.District)
-            //        {
-            //            if (item.Equals(item3.Name))
-            //            {
-            //                dc.Add(item3);
-            //                filterCity.Code = item2.Code;
-            //                filterCity.Name = item2.Name;
-            //            }
-            //            // filteredList = myList.Where(x => x > 7).ToList();
-            //        }
-
-            //    }
-            //    if (dc?.Any() ?? false)
-            //    {
-            //        filterCity.District = dc;
-            //        filtertList.Add(filterCity);
-            //    }
-
-            //}
             foreach (var item in cityList)
             {
                 List<District> dc = new List<District>();
@@ -134,7 +106,6 @@ namespace CityFilter_WebApi.Operations
         }
         public static List<City> FilterCode(AddressInfo Gobject, List<string> filter)
         {
-
             City filterCity = new City();
             List<City> filterList = new List<City>();
 
@@ -145,7 +116,7 @@ namespace CityFilter_WebApi.Operations
                     if (item == item2.Code)
                     {
                         filterCity = item2;
-                        filterList.Add(filterCity);
+                        filterList.Add(item2);
                     }
                 }
             }
@@ -221,7 +192,7 @@ namespace CityFilter_WebApi.Operations
         }
         public static AddressInfo DataTabletoObject(DataTable dt)
         {
-            AddressInfo result = null;
+            AddressInfo result = new AddressInfo();
             List<City> cityList = new List<City>();
             int i=0;
             int j=0;
@@ -229,8 +200,9 @@ namespace CityFilter_WebApi.Operations
             int kont = 0;
             int kont2 = 0;
             int kont3=0;
-
+            cityList.Add(getCity());
             int rowCount =dt.Rows.Count;
+
             foreach (DataRow row in dt.Rows)
             {
                 string[] fields = row.ItemArray.Select(field => field.ToString()).
@@ -248,7 +220,6 @@ namespace CityFilter_WebApi.Operations
                     j = 0;
                     kont2 = 0;
                 }
-
                 if (cityList[i].District[j].Name != fields[2])
                 {
                     if (kont2 != 0)
@@ -277,7 +248,142 @@ namespace CityFilter_WebApi.Operations
             result.City=cityList;
             return result;
         }
+        public static DataTable objToDataTable(AddressInfo G_obj)
+        {
+            DataTable dt = new DataTable();
+            dt.Columns.Add("CityName", typeof(string));
+            dt.Columns.Add("CityCode", typeof(string));
+            dt.Columns.Add("DistrictName", typeof(string));
+            dt.Columns.Add("ZipCode", typeof(string));
+            foreach (var item in G_obj.City)
+            {
+                foreach (var item2 in item.District)
+                {
+                    foreach (var item3 in item2.Zip)
+                    {
+                        dt.Rows.Add(item.Name,item.Code,item2.Name,item3.Code);
+                    }
+                }
+            }
+            return dt;
+        }
+        public static AddressInfo Filter(List<City> nameFilter, List<City> districtFilter, List<City> codeFilter)
+        {
+            AddressInfo result = new AddressInfo();
+            if(nameFilter.Count!=0 && codeFilter.Count!=0)
+            {
+                result.City = nameFilter;
+                var list = codeFilter.Except(nameFilter).ToList();
+                foreach (var item in list.ToList())
+                {
+                    result.City.Add(item);
+                }
+            }
+            else
+            {
+                if (nameFilter.Count!= 0)
+                {
+                    result.City = nameFilter;
+                }
+                if (codeFilter.Count != 0)
+                {
+                    result.City = codeFilter;
+                }
+            }
+            AddressInfo result2 = new AddressInfo();
+            result2 = result;
+            if (districtFilter.Count != 0 && result.City.Count != 0)
+            {
 
+                int i = 0;
+                foreach (var item in result2.City.ToList())
+                {
+                    foreach (var item2 in districtFilter.ToList())
+                    {
+                        if (item2.Name==item.Name)
+                        {
+                            result.City[i].District = item2.District;
+                            districtFilter.Remove(item2);
+                        }
+                    }
+                    i++;
+                }
+                foreach (var item in result2.City.ToList())
+                {
+                    foreach (var item2 in districtFilter.ToList())
+                    {
+                        if (item2.Name != item.Name)
+                        {
+                            result.City.Add(item2);
+                        }
+                    }
+                    i++;
+                }
+            }
+            else
+            {
+                if(districtFilter.Count != 0)
+                {
+                    result.City = districtFilter;
+                }
+            }
+            return result;
+        }
+        public static AddressInfo Sorting(AddressInfo G_obj,string sorting,string sortingParam)
+        {
+            AddressInfo result = new AddressInfo();
+
+            //G_obj.City = G_obj.City.OrderByDescending(item => item.Name).ToList();
+            //var azalanSiralama = G_obj.City.OrderBy(item => item).ToList();
+            ////result.City.Sort();
+            //result.City = artanSiralama;
+            result = G_obj;
+            if (sorting == "ASCENDING")
+            {
+                if (sortingParam == "CITY")
+                {
+                    result.City = G_obj.City.OrderByDescending(item => item.Name).ToList();
+                }
+                else if (sortingParam == "CODE")
+                {
+                    result.City = G_obj.City.OrderByDescending(item => item.Code).ToList();
+                }
+                else if (sortingParam == "DISTRICT")
+                {
+                    int i = 0;
+                    foreach (var item in G_obj.City.ToList())
+                    {
+                        result.City[i].District = item.District.OrderByDescending(x => x.Name).ToList();
+                        i++;
+                    }
+                }
+                else if (sortingParam == "ZIPCODE")
+                {
+                    int i = 0;
+                    int j = 0;
+                    foreach (var item in G_obj.City.ToList())
+                    {
+                        foreach (var item2 in item.District.ToList())
+                        {
+                            result.City[i].District[j].Zip = item2.Zip.OrderByDescending(x => x.Code).ToList();
+                            j++;
+                        }
+                        i++;
+                        j = 0;
+                    }
+                }
+                else
+                {
+                    //artanSiralama = G_obj.City.OrderByDescending(item => item.Name).ToList();
+                }
+
+            }
+            else if (sorting == "DESCENDING")
+            {
+
+            }
+            return result;
+        }
     }
 
 

@@ -36,6 +36,7 @@ namespace CityFilter_WebApi.Controllers
             if (value.data!=null)
             {
                 Gdata = Operation.XmlOrCsv("CSV",value.data);
+                Operation.objToDataTable(Gdata);
                 if (value.nameFilter != null)
                 {
                     st2 = Operation.StringtoList(value.nameFilter);
@@ -53,10 +54,11 @@ namespace CityFilter_WebApi.Controllers
                     st2 = Operation.StringtoList(value.codefilter);
                     codeFilter = Operation.FilterCode(Gdata, st2);
                 }
-
+                Gdata = Operation.Filter(nameFilter, districtFilter, codeFilter);
                 if (value.sorting != null)
                 {
                     sorting = value.sorting;
+                    Pdata=Operation.Sorting(Gdata,value.sorting,value.sortingParam);
                 }
             }
             else

@@ -93,6 +93,7 @@
     <Compile Include="Models\DataOperation.cs" />
     <Compile Include="Models\ReceivedData.cs" />
     <Compile Include="Operations\Operation.cs" />
+    <Compile Include="Operations\Sorting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
