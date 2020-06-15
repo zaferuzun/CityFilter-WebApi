@@ -92,7 +92,9 @@
     </Compile>
     <Compile Include="Models\DataOperation.cs" />
     <Compile Include="Models\ReceivedData.cs" />
+    <Compile Include="Operations\Deserialize.cs" />
     <Compile Include="Operations\Operation.cs" />
+    <Compile Include="Operations\Serialize.cs" />
     <Compile Include="Operations\Sorting.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -17,41 +17,19 @@ namespace CityFilter_WebApi.Operations
 {
     public class Operation
     {
-        public static AddressInfo XmlToObject(string xml)
-        {
-            AddressInfo result = null;
-            XmlSerializer serializer = new XmlSerializer(typeof(AddressInfo));
-            using (TextReader reader = new StringReader(xml))
-            {
-                result = (AddressInfo)serializer.Deserialize(reader);
-            }
-            return result;
-        }
-        public static string ObjectToXml(AddressInfo obj)
-        {
-            XmlSerializer XML = new XmlSerializer(typeof(AddressInfo));
-            using (var StringWriter = new StringWriter())
-            {
-                using (XmlWriter writer = XmlWriter.Create(StringWriter))
-                {
-                    XML.Serialize(writer, obj);
-                    return StringWriter.ToString();
-                }
-            }
-        }
-        public static List<string> StringtoList(string Gdata)
-        {
-            List<string> Pdata = Gdata.Split(',').ToList();
 
-            return Pdata;
-        }
-        public static AddressInfo getObject(string XmlorCvs)
-        {
-            AddressInfo result = null;
-            //if koy cvs bak
-            result = XmlToObject(XmlorCvs);
-            return result;
-        }
+
+        //public static AddressInfo getObject(string XmlorCvs)
+        //{
+        //    AddressInfo result = null;
+        //    //if koy cvs bak
+        //    result = XmlToObject(XmlorCvs);
+        //    return result;
+        //}
+
+        /// <summary>
+        /// Kullanıcıdan alınan şehir adlarına göre filtreler
+        /// </summary>
         public static List<City> FilterName (AddressInfo Gobject,List<string> filter)
         {
 
@@ -71,6 +49,9 @@ namespace CityFilter_WebApi.Operations
             }
             return filterList;
         }
+        /// <summary>
+        /// Kullanıcıdan alınan ilçe adlarına göre filtreler
+        /// </summary>
         public static List<City> FilterDistrict(AddressInfo Gobject, List<string> filter)
         {
             List<City> cityList = Gobject.City;
@@ -104,6 +85,9 @@ namespace CityFilter_WebApi.Operations
             //filtertList = cityList.Where(x => x.District[0].Name.Equals("Alaçatı")).ToList();
             return filtertList;
         }
+        /// <summary>
+        /// Kullanıcıdan alınan kod alanına göre filtreler
+        /// </summary>
         public static List<City> FilterCode(AddressInfo Gobject, List<string> filter)
         {
             City filterCity = new City();
@@ -122,54 +106,29 @@ namespace CityFilter_WebApi.Operations
             }
             return filterList;
         }
+        /// <summary>
+        /// Gelen veriyi kontrol edip uygun fonksiyonlara yönlendirir.
+        /// </summary>
         public static AddressInfo XmlOrCsv(string xmlorcvs,string data)
         {
             AddressInfo result = null;
 
             if (xmlorcvs=="XML")
             {
-                return Operation.getObject(data);
+                return Operations.Serialize.XmlToObject(data);
             }
             else if(xmlorcvs == "CSV")
             {
-                DataTable dt = ConvertCSVtoDataTable(data);
-                result = DataTabletoObject(dt);
+                DataTable dt = Operations.Serialize.ConvertCSVtoDataTable(data);
+                result = Operations.Serialize.DataTabletoObject(dt);
                 return result;
             }
+
             return result;
         }
-        public static DataTable ConvertCSVtoDataTable(string csvStr)
-        {
-            DataTable dt = new DataTable();
-
-            string[] tableData = csvStr.Split("\r\n".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            var col = from cl in tableData[0].Split(",".ToCharArray())
-                      select new DataColumn(cl);
-            dt.Columns.AddRange(col.ToArray());
-
-            (from st in tableData.Skip(1)
-             select dt.Rows.Add(st.Split(",".ToCharArray()))).ToList();
-
-            return dt;
-        }
-        public static string DataTabletoCSV (DataTable dtDataTable)
-        {
-
-            StringBuilder sb = new StringBuilder();
-            string[] columnNames = dtDataTable.Columns.Cast<DataColumn>().
-                                              Select(column => column.ColumnName).
-                                              ToArray();
-            sb.AppendLine(string.Join(",", columnNames));
-
-            foreach (DataRow row in dtDataTable.Rows)
-            {
-                string[] fields = row.ItemArray.Select(field => field.ToString()).
-                                                ToArray();
-                sb.AppendLine(string.Join(",", fields));
-            }
-
-            return sb.ToString();
-        }
+        /// <summary>
+        /// Boş bir şehir oluşturmak için kullanıldı
+        /// </summary>
         public static City getCity()
         {
             List<Zip> zipList = new List<Zip>()
@@ -191,83 +150,9 @@ namespace CityFilter_WebApi.Operations
             };
             return city;
         }
-        public static AddressInfo DataTabletoObject(DataTable dt)
-        {
-            AddressInfo result = new AddressInfo();
-            List<City> cityList = new List<City>();
-            int i=0;
-            int j=0;
-            int k = 0;
-            int kont = 0;
-            int kont2 = 0;
-            int kont3=0;
-            cityList.Add(getCity());
-            int rowCount =dt.Rows.Count;
-
-            foreach (DataRow row in dt.Rows)
-            {
-                string[] fields = row.ItemArray.Select(field => field.ToString()).
-                                                ToArray();
-                if (cityList[i].Name != fields[0])
-                {
-                    if(kont!=0)
-                    {
-                        i += 1;
-                        cityList.Add(getCity());
-                    }
-                    cityList[i].Name = fields[0];
-                    cityList[i].Code = fields[1];
-                    k = 0;
-                    j = 0;
-                    kont2 = 0;
-                }
-                if (cityList[i].District[j].Name != fields[2])
-                {
-                    if (kont2 != 0)
-                    {
-                        j +=1;
-                        cityList[i].District.Add(new District());
-                    }
-                    cityList[i].District[j].Name = fields[2];
-
-                    cityList[i].District[j].Zip = new List<Zip>();
-                    cityList[i].District[j].Zip.Add(new Zip());
-                    k = 0;
-                    kont3 = 0;
-                }
-                if (kont3 != 0 )
-                    cityList[i].District[j].Zip.Add(new Zip());
-
-                cityList[i].District[j].Zip[k].Code= fields[3];
-
-                k += 1;
-                kont = +1;
-                kont2 += 1;
-                kont3 += 1;
-                rowCount -= 1;
-            }
-            result.City=cityList;
-            return result;
-        }
-        public static DataTable objToDataTable(AddressInfo G_obj)
-        {
-            DataTable dt = new DataTable();
-            dt.Columns.Add("CityName", typeof(string));
-            dt.Columns.Add("CityCode", typeof(string));
-            dt.Columns.Add("DistrictName", typeof(string));
-            dt.Columns.Add("ZipCode", typeof(string));
-            foreach (var item in G_obj.City)
-            {
-                foreach (var item2 in item.District)
-                {
-                    foreach (var item3 in item2.Zip)
-                    {
-                        dt.Rows.Add(item.Name,item.Code,item2.Name,item3.Code);
-                    }
-                }
-            }
-            return dt;
-        }
+        /// <summary>
+        /// Şehir,ilçelere göre filtrelenen listeleri birleştirip tek listeye dönüştürür.
+        /// </summary>
         public static AddressInfo Filter(List<City> nameFilter, List<City> districtFilter, List<City> codeFilter)
         {
             AddressInfo result = new AddressInfo();
@@ -330,6 +215,9 @@ namespace CityFilter_WebApi.Operations
             }
             return result;
         }
+        /// <summary>
+        /// Gönderilen parametreler ile veriyi sıralar
+        /// </summary>
         public static AddressInfo Sorting(AddressInfo G_obj,string sorting,string sortingParam)
         {
             AddressInfo result = new AddressInfo();
@@ -359,17 +247,20 @@ namespace CityFilter_WebApi.Operations
             }
             return result;
         }
+        /// <summary>
+        /// Gönderilecek veriyi gelen formata dönüştürür
+        /// </summary>
         public static string XmlOrCsvPostData(AddressInfo result, string xmlorcvs)
         {
             string P_data = "";
             if (xmlorcvs == "XML")
             {
-                P_data = ObjectToXml(result);
+                P_data = Operations.Deserialize.ObjectToXml(result);
             }
             else if (xmlorcvs == "CSV")
             {
-                DataTable dt = objToDataTable(result);
-                P_data = DataTabletoCSV(dt);
+                DataTable dt = Operations.Deserialize.objToDataTable(result);
+                P_data = Operations.Deserialize.DataTabletoCSV(dt);
             }
             return P_data;
         }

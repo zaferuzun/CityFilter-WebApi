@@ -19,66 +19,62 @@ namespace CityFilter_WebApi.Controllers
         //[FromBody] ReceivedData value
         public IHttpActionResult getCity([FromBody] ReceivedData value)
         {
-            string data = "";
-            string sorting = "";
-            string name = "";
-            string district = "";
-            string code = "";
             List<string> st2;
-            var vv="";
             AddressInfo Gdata = new AddressInfo();
-            AddressInfo Pdata = new AddressInfo();
             List<City> nameFilter = new List<City>();
             List<City> districtFilter = new List<City>();
             List<City> codeFilter = new List<City>();
 
-
-            if (value.data!=null)
+            try
             {
-                Gdata = Operation.XmlOrCsv(value.formatType,value.data);
-                Operation.objToDataTable(Gdata);
-                if (value.nameFilter != null)
+                if (value.data != null && value.formatType != null)
                 {
-                    st2 = Operation.StringtoList(value.nameFilter);
-                    nameFilter = Operation.FilterName(Gdata,st2);
+                    Gdata = Operation.XmlOrCsv(value.formatType, value.data);
 
-                }
-                if (value.districtFilter != null)
-                {
-                    st2 = Operation.StringtoList(value.districtFilter);
-                    districtFilter = Operation.FilterDistrict(Gdata, st2);
+                    if (value.nameFilter != null)
+                    {
+                        st2 = Operations.Deserialize.StringtoList(value.nameFilter);
+                        nameFilter = Operation.FilterName(Gdata, st2);
 
+                    }
+                    if (value.districtFilter != null)
+                    {
+                        st2 = Operations.Deserialize.StringtoList(value.districtFilter);
+                        districtFilter = Operation.FilterDistrict(Gdata, st2);
+
+                    }
+                    if (value.codefilter != null)
+                    {
+                        st2 = Operations.Deserialize.StringtoList(value.codefilter);
+                        codeFilter = Operation.FilterCode(Gdata, st2);
+                    }
+                    Gdata = Operation.Filter(nameFilter, districtFilter, codeFilter);
+                    if (value.sorting != null)
+                    {
+                        Gdata = Operation.Sorting(Gdata, value.sorting, value.sortingParam);
+                    }
                 }
-                if (value.codefilter != null) 
+                else
                 {
-                    st2 = Operation.StringtoList(value.codefilter);
-                    codeFilter = Operation.FilterCode(Gdata, st2);
-                }
-                Gdata = Operation.Filter(nameFilter, districtFilter, codeFilter);
-                if (value.sorting != null)
-                {
-                    Gdata = Operation.Sorting(Gdata,value.sorting,value.sortingParam);
+                    var response = new HttpResponseMessage()
+                    {
+                        Content = new StringContent("Veri veya veri tipi yanlış gönderildi.", System.Text.Encoding.UTF8, "text/plain"),
+                    };
+                    return ResponseMessage(response);
                 }
             }
-            else
+            catch (Exception)
             {
-
+                var response = new HttpResponseMessage()
+                {
+                    Content = new StringContent("Parametreleri yanlış gönderdiniz.", System.Text.Encoding.UTF8, "text/plain"),
+                };
+                return ResponseMessage(response);
+                throw;
             }
-            //XmlDocument doc = new XmlDocument();
-            //doc.LoadXml(value.data[0]);
-            //string jsonText = JsonConvert.SerializeXmlNode(doc);
 
-            //var listOb = JsonConvert.DeserializeObject<List<AddressInfo>>(jsonText);
 
-            //AddressInfo account = JsonConvert.DeserializeObject<AddressInfo>(jsonText);
-            // XmlDocument doc2 = JsonConvert.DeserializeXmlNode(jsonText);
-            //AddressInfo result = null;
-            //XmlSerializer serializer = new XmlSerializer(typeof(AddressInfo));
-            //using (TextReader reader = new StringReader(value.data[0]))
-            //{
-            //    result = (AddressInfo)serializer.Deserialize(reader);
-            //}
-            string P_data = Operation.XmlOrCsvPostData(Gdata,value.formatType);
+            string P_data = Operations.Operation.XmlOrCsvPostData(Gdata,value.formatType);
 
             return Ok(P_data);
         }
